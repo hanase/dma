@@ -1,0 +1,12 @@
+# export functions
+export(
+	dma,
+	logistic.dma
+)
+# register S3 methods
+S3method(dma, default)
+S3method(logistic.dma, default)
+S3method(plot, dma)
+S3method(plot, logistic.dma)
+S3method(print, dma)
+S3method(print, logistic.dma)
