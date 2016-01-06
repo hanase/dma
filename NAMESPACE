@@ -1,3 +1,4 @@
+import(MASS, mnormt)
 # export functions
 export(
 	dma,

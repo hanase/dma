@@ -1,0 +1,6 @@
+1.2-2 (2014-11-6):
+- imports added and "require" removed
+- fixed a minor bug caused by missing "drop=FALSE"
+
+1.2-0 (2013-5-2)
+- Change of maintainer

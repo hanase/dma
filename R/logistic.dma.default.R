@@ -3,8 +3,8 @@ function(x, y, models.which, lambda=0.99, alpha=0.99,autotune=TRUE,
  initmodelprobs=NULL,initialsamp=NULL) {
   
   #load packages
-  require(mnormt)
-  require(MASS)
+  #require(mnormt)
+  #require(MASS)
   
   #K is number of candidate models
   #T is time
@@ -39,10 +39,10 @@ if(is.null(initialsamp)){initialsamp<-round(nrow(x)/10,0)}
 #dynamic logistic regression for each candidate model
 #this section could also be done in parallel
 for(mm in 1:nrow(models.which)){
-#data matrix for model mm
-xdat<-x[,c(which(models.which[mm,]==1))]
-xdat <- cbind(rep(1,dim(xdat)[1]),xdat)
-d <- dim(xdat)[2] 
+	#data matrix for model mm
+	xdat<-x[,c(which(models.which[mm,]==1)), drop=FALSE]
+	xdat <- cbind(rep(1,dim(xdat)[1]),xdat)
+	d <- dim(xdat)[2] 
 
 #matrix of possible combinations of lambda
 tune.mat <- tunemat.fn(lambda,1,d)
