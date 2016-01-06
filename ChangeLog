@@ -1,9 +1,10 @@
 1.2-3 (2016-1-6):
 - Fixed wrong dimnames.
-	
+- Imports added to namespace.
+
 1.2-2 (2014-11-6):
-- imports added and "require" removed
-- fixed a minor bug caused by missing "drop=FALSE"
+- Imports added and "require" removed.
+- Fixed a minor bug caused by missing "drop=FALSE".
 
 1.2-0 (2013-5-2)
 - Change of maintainer

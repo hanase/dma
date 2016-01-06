@@ -1,4 +1,7 @@
 import(MASS, mnormt)
+importFrom("graphics", "legend", "matplot", "par", "plot")
+importFrom("stats", "binomial", "coefficients", "glm", "var", "vcov")
+importFrom("utils", "combn")
 # export functions
 export(
 	dma,
