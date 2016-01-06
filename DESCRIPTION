@@ -1,6 +1,6 @@
 Package: dma
 Type: Package
-Title: Dynamic model averaging
+Title: Dynamic Model Averaging
 Version: 1.2-3
 Date: 2016-1-6
 Author: Tyler H. McCormick, Adrian Raftery, David Madigan
