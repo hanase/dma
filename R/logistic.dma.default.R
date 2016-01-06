@@ -80,9 +80,10 @@ if(sum(is.na(laplacemodel))>0|sum(laplacemodel==Inf)>0|sum(laplacemodel==-Inf)>0
   
 #Dynamic model averaging
 #set up arrays for posterior model probabilities 
-pi.t.t<-array(dim=c(K,nrow(x)),dimnames=c("model","time"))
-pi.t.tm1<-array(dim=c(K,nrow(x)),dimnames=c("model","time"))
-omega.tk<-array(dim=c(K,nrow(x)),dimnames=c("model","time"))
+dimnames <- list(paste("model", 1:K, sep="_"), paste("time", 1:nrow(x), sep="_"))
+pi.t.t<-array(dim=c(K,nrow(x)), dimnames=dimnames)
+pi.t.tm1<-array(dim=c(K,nrow(x)),dimnames=dimnames)
+omega.tk<-array(dim=c(K,nrow(x)),dimnames=dimnames)
 
 #initial probability estimates
 #default is uniform or user-specified
