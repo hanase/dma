@@ -1,3 +1,8 @@
+1.3-0 (2017-6-15):
+- Fixed output names of dma ("msemse" changed to "mse").
+- Function dma now returns estimates and variances by time and model.
+- Minor fix in the documentation.
+
 1.2-3 (2016-1-6):
 - Fixed wrong dimnames.
 - Imports added to namespace.

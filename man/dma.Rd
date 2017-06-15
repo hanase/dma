@@ -60,9 +60,13 @@ length of initial period. Performance is summarized with and
  \item{yhat.bymodel}{TTxK matrix whose tk element gives yhat for yt for model k}
  \item{yhat.ma}{TT vector whose t element gives the model-averaged yhat for yt}
  \item{pmp}{TTxK matrix whose tk element is the post prob of model k at t}
- \item{thetahat.ma}{TTx(nvar+1) matrix whose tk element is the model-averaged 
+ \item{thetahat}{KxTTx(nvar+1) array whose ktj element is the 
+		 estimate of theta_{j-1} for model k at t}
+\item{Vtheta}{KxTTx(nvar+1) array whose ktj element is the 
+		 variance of theta_{j-1} for model k at t}
+ \item{thetahat.ma}{TTx(nvar+1) matrix whose tj element is the model-averaged 
 		 estimate of theta_{j-1} at t}
- \item{Vtheta.ma}{TTx(nvar+1) matrix whose tk element is the model-averaged
+ \item{Vtheta.ma}{TTx(nvar+1) matrix whose tj element is the model-averaged
 		 variance of thetahat_{j-1} at t}
  \item{mse.bymodel}{MSE for each model}
  \item{mse.ma}{MSE of model-averaged prediction}

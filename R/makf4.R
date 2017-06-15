@@ -66,6 +66,7 @@ pimat <- matrix (rep(0,(TT-delay-1)*K), ncol=K)
 # Added on 6/25/09
 thetahat <- matrix (rep(0,K*(nvar+1)),nrow=K)  # temporary variable
 Vtheta <- matrix (rep(0,K*(nvar+1)),nrow=K)  # temporary variable
+thetahatall <- Vthetaall <- array(0, dim=c(K,TT,nvar+1))
 thetahat.ma <- matrix (rep(0,TT*(nvar+1)),nrow=TT)
 Vtheta.ma <- matrix (rep(0,TT*(nvar+1)),nrow=TT)
 # End 6/25/09 addition
@@ -86,42 +87,43 @@ piold <- rep (1/K, K)
 # Iterations
 
 for (tt in 1:(TT-delay-1)) {
-predvar <- rep(0,K)
+    predvar <- rep(0,K)
 
-# Kalman update for each model
-for (k in 1:K) {
-which <- as.logical( models.which[k,])
-xtmp <- c( 1, x[tt,which])
-Kalman.out <- rm.Kalman (thetaold[[k]], Sigmaold[[k]], Vold[k], lambda,
- xtmp, y[tt], tt)
-yhat.Kalman[tt,k] <- Kalman.out$yhat
-yhat[tt+delay,k] <- t(c(1,x[tt+delay,which])) %*% thetaold[[k]]
-# Update theta and Sigma using Kalman filter output
-thetaold[[k]] <- Kalman.out$thetanew
-Sigmaold[[k]] <- Kalman.out$Sigmanew
-Vold[k] <- Kalman.out$Vnew
-predvar[k] <- Kalman.out$predvar
+    # Kalman update for each model
+    for (k in 1:K) {
+        which <- as.logical( models.which[k,])
+        xtmp <- c( 1, x[tt,which])
+        Kalman.out <- rm.Kalman (thetaold[[k]], Sigmaold[[k]], Vold[k], lambda,
+        xtmp, y[tt], tt)
+        yhat.Kalman[tt,k] <- Kalman.out$yhat
+        yhat[tt+delay,k] <- t(c(1,x[tt+delay,which])) %*% thetaold[[k]]
+        # Update theta and Sigma using Kalman filter output
+        thetaold[[k]] <- Kalman.out$thetanew
+        Sigmaold[[k]] <- Kalman.out$Sigmanew
+        Vold[k] <- Kalman.out$Vnew
+        predvar[k] <- Kalman.out$predvar
 
-# Added on 6/25/09
-whichtmp <- c(TRUE,which)
-thetahat[k,whichtmp] <- Kalman.out$thetanew
-Vtheta[k,whichtmp] <- diag (Kalman.out$Sigmanew)
-# End 6/25/09 addition
-}
+        # Added on 6/25/09
+        whichtmp <- c(TRUE,which)
+        thetahat[k,whichtmp] <- Kalman.out$thetanew
+        Vtheta[k,whichtmp] <- diag (Kalman.out$Sigmanew)
+        # End 6/25/09 addition
+    }
 
-# Model averaging prediction
-yhat.ma[tt+delay] <- t(piold) %*% yhat[tt+delay,]
+    # Model averaging prediction
+    yhat.ma[tt+delay] <- t(piold) %*% yhat[tt+delay,]
 
-# Update model probabilities
-model.update.out <- 
-  model.update3 (piold, gamma, eps, y[tt], yhat.Kalman[tt,], predvar)
-piold <- model.update.out$pinew
-pimat[tt,] <- piold
+    # Update model probabilities
+    model.update.out <- model.update3 (piold, gamma, eps, y[tt], yhat.Kalman[tt,], predvar)
+    piold <- model.update.out$pinew
+    pimat[tt,] <- piold
 
-# Added 6/25/09: Model averaged estimates and posterior variances
-thetahat.ma[tt,] <- t(piold) %*% thetahat
-Vtheta.ma[tt,] <- t(piold) %*% Vtheta + t(piold) %*% thetahat^2 - 
- thetahat.ma[tt,]^2
+    # Added 6/25/09: Model averaged estimates and posterior variances
+    thetahat.ma[tt,] <- t(piold) %*% thetahat
+    Vtheta.ma[tt,] <- t(piold) %*% Vtheta + t(piold) %*% thetahat^2 - thetahat.ma[tt,]^2
+    
+    thetahatall[, tt, ] <- thetahat
+    Vthetaall[, tt, ] <- Vtheta
 }
 
 # Summarize performance with and without the first initialperiod samples.
@@ -144,10 +146,10 @@ msemseinitialperiod.bymodel<-mse400.bymodel
 msemseinitialperiod.ma<-mse400.ma
 
 # Output
-list (yhat.bymodel=yhat, yhat.ma=yhat.ma, pmp=pimat, 
+list (yhat.bymodel=yhat, yhat.ma=yhat.ma, pmp=pimat, thetahat=thetahatall, Vtheta=Vthetaall,
  thetahat.ma=thetahat.ma, Vtheta.ma=Vtheta.ma,
- mse.bymodel=mse.bymodel, mse.ma=mse.ma, msemseinitialperiod.bymodel=msemseinitialperiod.bymodel,
- msemseinitialperiod.ma=msemseinitialperiod.ma, lambda=lambda, gamma=gamma,
+ mse.bymodel=mse.bymodel, mse.ma=mse.ma, mseinitialperiod.bymodel=msemseinitialperiod.bymodel,
+ mseinitialperiod.ma=msemseinitialperiod.ma, lambda=lambda, gamma=gamma,
  models.which=models.which, delay=delay, initialperiod=initialperiod)
 }
 
