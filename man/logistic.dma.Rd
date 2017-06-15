@@ -49,7 +49,7 @@ logistic.dma(x, y, models.which, lambda=0.99, alpha=0.99,autotune=TRUE,
   \item{alpha}{scalar, tuning factor for model averaging}
   \item{autotune}{T/F, indicator of whether or not to use autotuning algorithm}
   \item{alpha.used}{T vector of alpha values used}
-  \item{theta}{T vector of alpha values used}
+  \item{theta}{K by T by d array of dynamic logistic regression estimates for each model}
   \item{vartheta}{K by T by d array of dynamic logistic regression variances for each model}
   \item{pmp}{K by T array of posterior model probabilities}
   \item{yhatdma}{T vector of model-averaged predictions}
