@@ -18,7 +18,7 @@ model probabilities.
 There are TT time points, K models, and d total covariates.}
 \usage{
 dma(x, y, models.which, lambda=0.99, gamma=0.99, 
- eps=.001/nrow(models.which), delay=1, initialperiod=200)
+ eps=.001/nrow(models.which), delay=0, initialperiod=200)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -48,7 +48,7 @@ When y_t is controlled, only y_{t-delay-1} and before
 		 are available. This is determined by the machine.
 		Note that delay as defined here corresponds to (k-1)
 		 in the Ettler et al (2007, MixSim) paper.
-		Thus we use the default delay=24, corresponding to k=25.
+		Thus k=25 in the paper corresponds to delay=24.
 }
   \item{initialperiod}{
 length of initial period. Performance is summarized with and

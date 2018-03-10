@@ -11,8 +11,8 @@ This package implements dynamic Bayesian model averaging as described for contin
 \tabular{ll}{
 Package: \tab dma\cr
 Type: \tab Package\cr
-Version: \tab 1.3-0\cr
-Date: \tab 2017-6-15\cr
+Version: \tab 1.3-1\cr
+Date: \tab 2018-3-9\cr
 License: \tab GPL2\cr
 }
 }
