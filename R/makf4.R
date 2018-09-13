@@ -1,5 +1,5 @@
 makf4 <- function( x, y, models.which, lambda=0.99, gamma=0.99, 
- eps=.001/nrow(models.which), delay=1, initialperiod=200) {
+ eps=.001/nrow(models.which), delay=0, initialperiod=200) {
 # Revised June 29, 2009 to replace equation (17) in the paper by a version
 # (Minor revision of comments August 10, 2011.)
 #  that regularizes all posterior model probabilities away from zero.
@@ -61,7 +61,7 @@ if (delay>0) yhat[1:delay,] <- NA
 yhat.ma <- rep( 0,TT)
 if (delay>0) yhat.ma[1:delay] <- NA
 yhat.Kalman <- matrix (rep(0,TT*K), ncol=K)
-pimat <- matrix (rep(0,(TT-delay-1)*K), ncol=K)
+pimat <- matrix (rep(0,(TT-delay)*K), ncol=K)
 
 # Added on 6/25/09
 thetahat <- matrix (rep(0,K*(nvar+1)),nrow=K)  # temporary variable
@@ -86,7 +86,7 @@ piold <- rep (1/K, K)
 
 # Iterations
 
-for (tt in 1:(TT-delay-1)) {
+for (tt in 1:(TT-delay)) {
     predvar <- rep(0,K)
 
     # Kalman update for each model

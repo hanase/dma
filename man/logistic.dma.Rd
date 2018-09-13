@@ -73,6 +73,7 @@ coefmat<-cbind(coefmat,seq(1,.45,length.out=nrow(coefmat)),
 npar<-ncol(coefmat)-1
 
 #simulate data
+set.seed(1234)
 dat<-matrix(rnorm(200*(npar),0,1),200,(npar))
 ydat<-exp(rowSums((cbind(rep(1,nrow(dat)),dat))[1:100,]*coefmat[1:100,]))/
           (1+exp(rowSums(cbind(rep(1,nrow(dat)),dat)[1:100,]*coefmat[1:100,])))
