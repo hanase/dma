@@ -1,3 +1,10 @@
+logistic.dma.default.stream <-
+    function(x, y, models.which, lambda=0.99, alpha=0.99,autotune=TRUE, 
+             initmodelprobs=NULL,initialsamp=NULL) {
+        
+        
+}
+
 logistic.dma.default <-
 function(x, y, models.which, lambda=0.99, alpha=0.99,autotune=TRUE, 
  initmodelprobs=NULL,initialsamp=NULL) {
