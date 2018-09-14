@@ -26,22 +26,30 @@ mmat<-matrix(c(1,1,1,1,1,0,0,0,1,1,1,0,1,0,1),3,5,byrow=TRUE)
 #Fit model and plot
 #autotuning is turned off for this demonstration example
 ldma.test<-logistic.dma(dat,y,mmat,lambda=.99,alpha=.99,autotune=FALSE)
-plot(ldma.test)
+
+## Testing logistic.dma.default.stream
+ldma.test.2 <- logistic.dma.default.stream(dat,y,mmat,lambda=.99,alpha=.99,autotune=FALSE)
+
+identical(ldma.test, ldma.test.2) 
 
 
-modl <- InitializeDMALogistic(dat[1:20,],y[1:20],mmat,lambda=.99,alpha=.99,autotune=FALSE)
+
+
+
+
+## To test the functionality separately
+modl <- InitializeDMALogistic(dat[1:20,],y[1:20],mmat,lambda=.99,alpha=.99)
 yhat <- matrix(0, ncol=3, nrow=200)
 for(i in 21:200){
   yhat[i,] <- PredictDMALogistic(modl,mmat,dat[i,])
-  modl <- UpdateDMALogistic(modl, mmat, dat[i,], y[i])
+  modl <- UpdateDMALogistic(modl, mmat, dat[i,], y[i], autotune=FALSE)
 }
 #yhat <- PredictDMALogistic(modl,mmat,dat[21:25,])
 sum(abs(modl$yhatmodel[,21:200]-ldma.test$yhatmodel[,21:200]))
-modl$yhatmodel[2,150:200]
-ldma.test$yhatmodel[2,150:200]
+# modl$yhatmodel[2,150:200]
+# ldma.test$yhatmodel[2,150:200]
 
-mod.yhat <- t(modl$yhatmodel[,21:200])
-mod.yhat[1:10,] - yhat[21:30,]
 
 mod2<- DynamicModelAvg(modl,mmat)
 sum(abs(mod2$yhatdma - ldma.test$yhatdma))
+

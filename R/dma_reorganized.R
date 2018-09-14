@@ -1,5 +1,5 @@
 InitializeDMALogistic <-
-  function(x, y, models.which, lambda=0.99, alpha=0.99,autotune=TRUE, 
+  function(x, y, models.which, lambda=0.99, alpha=0.99, 
            initmodelprobs=NULL) {
     
     #load packages
@@ -45,10 +45,6 @@ InitializeDMALogistic <-
       xdat<-x[,c(which(models.which[mm,]==1)), drop=FALSE]
       xdat <- cbind(rep(1,dim(xdat)[1]),xdat)
       d <- dim(xdat)[2] 
-      
-      #matrix of possible combinations of lambda
-      ## tune.mat <- tunemat.fn(lambda,1,d)  ## SK Commented it
-      if(autotune==FALSE){tune.mat<-matrix(rep(lambda,d),nrow=1,ncol=d)}
       
       #generate inital values using glm and use them for the first initialsamp observations
       init.temp<-dlogr.init(xdat[1:initialsamp,],y[1:initialsamp])
@@ -100,11 +96,16 @@ PredictDMALogistic <- function(fit, models.which, newx){
 
 
 
-UpdateDMALogistic <- function(fit, models.which, newx, newy){
+UpdateDMALogistic <- function(fit, models.which, newx, newy, autotune=TRUE){
   require("mnormt")
   require("MASS")
   #newx <- as.data.frame(newx)
+  # x <- matrix(0, nrow=(dim(fit$x)[1]+dim(newx)[1]), ncol=dim(newx)[2])
+  # x[1:nrow(fit$x),] <- fit$x
+  # x[(nrow(fit$x)+1):dim(x)[1],] <- newx
   x <- rbind(fit$x,newx)
+  rownames(x) <- NULL
+  dimnames(x) <- NULL
   y <- c(fit$y, newy)
   if(is.null(dim(newx))){
     newx <- c(1, newx)
@@ -151,16 +152,18 @@ UpdateDMALogistic <- function(fit, models.which, newx, newy){
   #   
   #   yhatmodel[ll,1:len]<-apply(exp(x1[,sel.rows]*fit$theta[ll,,sel.rows]),1, sum)/apply((1+exp(x1[,sel.rows]*(fit$theta[ll,,sel.rows]))),1,sum)
   # }  
-  
+
   
   for(mm in 1:K){
     sel.rows <- c(1,1+which(models.which[mm,]==1))
     xx <- newx[,sel.rows]
-    BetaHat <- fit$theta[mm,last,sel.rows]
-    
     d <- length(sel.rows)
-    tune.mat<-matrix(rep(lambda,d),nrow=1,ncol=d)
     
+    #matrix of possible combinations of lambda
+    tune.mat <- tunemat.fn(lambda,1,d)  ## SK Commented it
+    if(autotune==FALSE){tune.mat<-matrix(rep(lambda,d),nrow=1,ncol=d)}
+    
+    BetaHat <- fit$theta[mm,last,sel.rows]
     dim(BetaHat) <- c(length(sel.rows),1)
     varbetahat.tm1 <- fit$varcov[mm,sel.rows,sel.rows]
     step.tmp <- dlogr.step(xx,newy,BetaHat,varbetahat.tm1,tune.mat)
@@ -273,7 +276,6 @@ DynamicModelAvg <- function(fit,models.which, initmodelprobs=NULL){
   #yhatmodel K by time vector of fitted values for each model
   est<-(list(x=x,y=y,models=models.which,lambda=lambda,alpha=alpha,
              pmp=pi.t.t,
-             mrg=omega.tk,
              alpha.used=alpha.vec,
              theta=baytah,
              vartheta=varbaytah,
