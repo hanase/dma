@@ -1,9 +1,40 @@
 logistic.dma.default.stream <-
     function(x, y, models.which, lambda=0.99, alpha=0.99,autotune=TRUE, 
              initmodelprobs=NULL,initialsamp=NULL) {
-        
-        
+      #how much of the sample should be used to generate initial values?
+      if(is.null(initialsamp)){initialsamp<-round(nrow(x)/10,0)}
+      
+      # take the initial sample as training data
+      trainX <- x[1:initialsamp,]
+      trainY <- y[1:initialsamp]
+ 
+      # train the dma logistic model
+      mod <- InitializeDMALogistic(trainX,trainY,mmat,lambda=.99,alpha=.99)
+      
+      # take the rest as test data  
+      st <- initialsamp+1
+      en <- dim(x)[1]
+      testX <- x[st:en,]
+      testY <- y[st:en]
+      
+      ypreds <- matrix(0, ncol=nrow(models.which), nrow=dim(testX)[1])
+      # predict and update model
+      for(i in 1:dim(testX)[1]){
+        ypreds[i,] <- PredictDMALogistic(mod,models.which,testX[i,])
+        mod <- UpdateDMALogistic(mod, models.which, testX[i,], testY[i], autotune=autotune)
+      }
+      # dynamic model averaging
+      mod <- DynamicModelAvg(mod,models.which)
+      
+      # removing unwanted attributes(these were needed for updating the model)
+      mod$varcov <- NULL
+      mod$laplacemodel <- NULL
+
+      class(mod)<-"logistic.dma"
+      
+      mod
 }
+
 
 logistic.dma.default <-
 function(x, y, models.which, lambda=0.99, alpha=0.99,autotune=TRUE, 
