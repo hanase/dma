@@ -207,10 +207,9 @@ logdma.average <- function(fit, alpha = 0.99, initmodelprobs=NULL){
     K <- nrow(fit$models)
     x <- fit$x
     
-    if(sum(is.na(laplacemodel))>0|sum(laplacemodel==Inf)>0|sum(laplacemodel==-Inf)>0)
-    {print("Warning: At least one laplace approximation is not well behaved.  This will likely lead to issues with posterior model probabilities.
-           This is likely a computation issue")}
-    
+    if(any(is.na(laplacemodel)) | any(laplacemodel==Inf) | any(laplacemodel==-Inf))
+        warning("At least one laplace approximation is not well behaved. This will likely lead to issues with posterior model probabilities. This is likely a computation issue")
+
     #Dynamic model averaging
     #set up arrays for posterior model probabilities 
     dimnames <- list(paste("model", 1:K, sep = "_"), paste("time", 1:nrow(x), sep = "_"))

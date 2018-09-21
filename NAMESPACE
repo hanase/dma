@@ -1,4 +1,4 @@
-import(MASS, mnormt)
+import(MASS)
 importFrom("graphics", "legend", "matplot", "par", "plot")
 importFrom("stats", "binomial", "coefficients", "glm", "var", "vcov")
 importFrom("utils", "combn")
