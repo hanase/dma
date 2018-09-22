@@ -23,9 +23,8 @@ if (!is.matrix(x.t)) {
     log.p.theta <- -d/2 * log(2*pi) - .5*log(det(Rhat.t)) - .5*t(betahat.t - betahat.tm1) %*% ginv(Rhat.t) %*% (betahat.t - betahat.tm1)
     
     K <- x.t %*% betahat.t
-    if(K > 700) { # exponent too large -> approximate the log
-        log.p.y <- if(y.t == 0) -K else (y.t - 1) * K
-	} else log.p.y <- log(prod((exp(y.t*K))/(1 + exp(K))))
+    # if exponent K too large approximate the log by (y.t - 1) * K
+    log.p.y <- if(K > 700) (y.t - 1) * K else log(prod((exp(y.t*K))/(1 + exp(K))))
 
     return(((d/2)*log(2*pi))+(.5*log(abs(det(ginv((1*Del2)))))) + log.p.theta + log.p.y)
 }
