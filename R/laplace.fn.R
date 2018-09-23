@@ -20,12 +20,13 @@ if (!is.matrix(x.t)) {
   # else{p.theta <- dmnorm(t(betahat.t),t(betahat.tm1),Rhat.t)}
   #########################################################  
     # Use log of MVN density directly (to avoid numerical issues)
-    log.p.theta <- -d/2 * log(2*pi) - .5*log(det(Rhat.t)) - .5*t(betahat.t - betahat.tm1) %*% ginv(Rhat.t) %*% (betahat.t - betahat.tm1)
+    log.p.theta <- -d/2 * log(2*pi) - .5*sum(log(eigen(Rhat.t)$values)) - .5*t(betahat.t - betahat.tm1) %*% ginv(Rhat.t) %*% (betahat.t - betahat.tm1)
     
     K <- x.t %*% betahat.t
     # if exponent K too large approximate the log by (y.t - 1) * K
     log.p.y <- if(K > 700) (y.t - 1) * K else log(prod((exp(y.t*K))/(1 + exp(K))))
-
-    return(((d/2)*log(2*pi))+(.5*log(abs(det(ginv((1*Del2)))))) + log.p.theta + log.p.y)
+    #if(is.infinite(((d/2)*log(2*pi))+(.5*sum(log(abs(eigen(ginv(1*Del2))$values)))) + log.p.theta + log.p.y)) stop("") 
+    #return(((d/2)*log(2*pi))+(.5*log(abs(det(ginv((1*Del2)))))) + log.p.theta + log.p.y)
+    return(((d/2)*log(2*pi))+(.5*sum(log(abs(eigen(ginv(1*Del2))$values)))) + log.p.theta + log.p.y)
 }
 
