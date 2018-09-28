@@ -25,7 +25,7 @@ if (!is.matrix(x.t)) {
     K <- x.t %*% betahat.t
     # if exponent K too large or too small, approximate the log
     if(K > 700) {
-        log.p.y <-  (y.t - 1) * K 
+        log.p.y <-  (y.t - 1) * K - exp(-K)
     } else {
         if(K < -700) {
             log.p.y <- (y.t - 1) * K + K

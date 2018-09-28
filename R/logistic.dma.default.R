@@ -1,6 +1,6 @@
 logistic.dma.default <-
     function(x, y, models.which, lambda=0.99, alpha=0.99,autotune=TRUE, 
-             initmodelprobs=NULL,initialsamp=NULL) {
+             initmodelprobs=NULL,initialsamp=NULL, regul = FALSE) {
         
         #K is number of candidate models
         #T is time
@@ -20,7 +20,8 @@ logistic.dma.default <-
         #initmodelprobs K vector of starting probabilities for model averaging.  If null (default),
         #then use 1/K for each model.
         #initialsamp scalar indicating how many observations to use for generating initial 
-        #values.  If null (default), then use 10 percent.  
+        #values.  If null (default), then use 10 percent.
+        #regul is logical determining if bayesian regularization of the initial parameters should be used
         
       #how much of the sample should be used to generate initial values?
       if(is.null(initialsamp)){initialsamp<-round(nrow(x)/10,0)}
@@ -31,7 +32,7 @@ logistic.dma.default <-
       trainY <- y[1:initialsamp]
  
       # train the dma logistic model
-      mod <- logdma.init(trainX, trainY, models.which)
+      mod <- logdma.init(trainX, trainY, models.which, regul = regul)
       
       # take the rest as test data  
       st <- initialsamp+1
@@ -57,7 +58,7 @@ logistic.dma.default <-
       mod
 }
 
-logdma.init <- function(x, y, models.which) {
+logdma.init <- function(x, y, models.which, regul = FALSE) {
     # Prepare for estimation using training data
     #K is number of candidate models
     #T is time
@@ -73,29 +74,38 @@ logdma.init <- function(x, y, models.which) {
     K<-nrow(models.which)
     nx <- nrow(x)
     
+    #dynamic logistic regression for each candidate model
+    #this section could also be done in parallel
+    fut <- list()
+    for(mm in 1:K){
+        fut[[mm]] <- future({ # run these in parallel
+            #data matrix for model mm
+            xdat<-x[,c(which(models.which[mm,]==1)), drop=FALSE]
+            xdat <- cbind(rep(1,dim(xdat)[1]),xdat)
+            d <- dim(xdat)[2] 
+            fsel.rows <- c(1,1+which(models.which[mm,]==1))
+            #generate inital values using glm
+            init.temp<-dlogr.init(xdat,y, regul = regul)
+            betahat.tm1 <- init.temp$BetaHat
+            fbaytah <- matrix(rep(init.temp$BetaHat, nx), nx,length(init.temp$BetaHat),byrow=TRUE)
+            fvarbaytah <- matrix(rep(diag(init.temp$VarBetaHat), nx), nx,length(init.temp$BetaHat),byrow=TRUE)
+            fvarbetahat.tm1 <- init.temp$VarBetaHat ## SK - This stores the initial variance covariance matrix
+            fyhatmodel <- 1/(1 + exp( - xdat %*% init.temp$BetaHat))
+            list(sel.rows = fsel.rows, baytah = fbaytah, varbaytah = fvarbaytah, varcovar = fvarbetahat.tm1, yhatmodel = fyhatmodel)
+        })
+    }
     #set up arrays with output for each candidate model
     baytah<-array(dim=c(K, nx, (ncol(x)+1)))
     varbaytah<-array(dim=c(K, nx, (ncol(x)+1)))
     yhatmodel<-array(dim=c(K, nx))
     varcovar<-array(dim=c(K, (ncol(x)+1),(ncol(x)+1)))
     
-    #dynamic logistic regression for each candidate model
-    #this section could also be done in parallel
-    for(mm in 1:K){
-        #data matrix for model mm
-        xdat<-x[,c(which(models.which[mm,]==1)), drop=FALSE]
-        xdat <- cbind(rep(1,dim(xdat)[1]),xdat)
-        d <- dim(xdat)[2] 
-        sel.rows <- c(1,1+which(models.which[mm,]==1))
-        
-        #generate inital values using glm
-        init.temp<-dlogr.init(xdat,y)
-        betahat.tm1 <- init.temp$BetaHat
-        baytah[mm, , sel.rows] <- matrix(rep(init.temp$BetaHat, nx), nx,length(init.temp$BetaHat),byrow=TRUE)
-        varbaytah[mm, , sel.rows] <- matrix(rep(diag(init.temp$VarBetaHat), nx), nx,length(init.temp$BetaHat),byrow=TRUE)
-        varbetahat.tm1 <- init.temp$VarBetaHat ## SK - This stores the initial variance covariance matrix
-        yhatmodel[mm, ]<-exp(xdat %*% init.temp$BetaHat)/(1+exp(xdat %*% init.temp$BetaHat))
-        varcovar[mm,sel.rows,sel.rows] <- varbetahat.tm1
+    for(mm in 1:K){ # collect parallel results
+        f <- value(fut[[mm]])
+        baytah[mm, , f$sel.rows] <- f$baytah
+        varbaytah[mm, , f$sel.rows] <- f$varbaytah
+        yhatmodel[mm, ] <- f$yhatmodel
+        varcovar[mm, f$sel.rows, f$sel.rows] <- f$varcovar
     }
     est<-(list(x=x,y=y,models=models.which,
                varcov = varcovar,  
@@ -147,6 +157,35 @@ logdma.update <- function(fit, newx, newy, lambda = 0.99, autotune=TRUE){
     big.len <- nrow(fit$x) + nrow(newx)
     K<-nrow(models.which)
     L <- ncol(fit$x)+1
+
+    # Store fit values in the arrays
+    len <- dim(fit$x)[1]
+    update.index <- (len+1):big.len
+    
+    upd <- list()
+    for(mm in 1:K){ # can be processed in parallel
+        upd[[mm]] <- future({
+            sel.rows <- c(1,1+which(models.which[mm,]==1))
+            xx <- newx[,sel.rows]
+            d <- length(sel.rows)
+
+            #matrix of possible combinations of lambda
+            tune.mat<- if(autotune==FALSE) matrix(rep(lambda,d),nrow=1,ncol=d) else tunemat.fn(lambda,1,d)
+
+            BetaHat <- cbind(fit$theta[mm,last,sel.rows]) # creates a column from a vector
+            varbetahat.tm1 <- fit$varcov[mm,sel.rows,sel.rows]
+
+            # update
+            step.tmp <- dlogr.step(xx,newy,BetaHat,varbetahat.tm1,tune.mat)
+
+            #compute fitted value
+            yhatmodel <- 1/(1 + exp(- xx%*%step.tmp$betahat.t))
+            
+            list(sel.rows = sel.rows, theta = step.tmp$betahat.t, vartheta = diag(step.tmp$varbetahat.t), 
+                 laplacemodel = step.tmp$laplace.t, yhatmodel = yhatmodel, varcov = step.tmp$varbetahat.t)
+        })
+    }
+    
     # set up arrays with output for each candidate model
     theta<-array(dim=c(K, big.len, L))
     vartheta<-array(dim=c(K, big.len, L))
@@ -154,39 +193,23 @@ logdma.update <- function(fit, newx, newy, lambda = 0.99, autotune=TRUE){
     yhatmodel<-array(dim=c(K, big.len))
     varcov<-array(dim=c(K, L, L))
     
-    # Store fit values in the arrays
-    len <- dim(fit$x)[1]
     theta[,1:len,] <- fit$theta
     vartheta[,1:len,] <- fit$vartheta
+    yhatmodel[,1:len] <- fit$yhatmodel
+    
     if(is.null(fit$laplacemodel)){
         laplacemodel[,1:len]<-rep(0,len)
     }else{
         laplacemodel[,1:len]<-fit$laplacemodel
     }
-    yhatmodel[,1:len] <- fit$yhatmodel
-    update.index <- (len+1):big.len
-    
+    # gather output
     for(mm in 1:K){
-        sel.rows <- c(1,1+which(models.which[mm,]==1))
-        xx <- newx[,sel.rows]
-        d <- length(sel.rows)
-        
-        #matrix of possible combinations of lambda
-        tune.mat<- if(autotune==FALSE) matrix(rep(lambda,d),nrow=1,ncol=d) else tunemat.fn(lambda,1,d)
-        
-        BetaHat <- cbind(fit$theta[mm,last,sel.rows]) # creates a column from a vector
-        varbetahat.tm1 <- fit$varcov[mm,sel.rows,sel.rows]
-        
-        # update
-        step.tmp <- dlogr.step(xx,newy,BetaHat,varbetahat.tm1,tune.mat)
-        
-        #gather output
-        theta[mm, update.index, sel.rows] <- step.tmp$betahat.t
-        vartheta[mm, update.index, sel.rows] <- diag(step.tmp$varbetahat.t)
-        laplacemodel[mm, update.index]<-step.tmp$laplace.t 
-        #compute fitted value
-        yhatmodel[mm, update.index]<-exp(xx%*%step.tmp$betahat.t)/(1+exp(xx%*%step.tmp$betahat.t))
-        varcov[mm,sel.rows, sel.rows] <- step.tmp$varbetahat.t
+        f <- value(upd[[mm]])
+        theta[mm, update.index, f$sel.rows] <- f$theta
+        vartheta[mm, update.index, f$sel.rows] <- f$vartheta
+        laplacemodel[mm, update.index]<-f$laplacemodel
+        yhatmodel[mm, update.index] <- f$yhatmodel
+        varcov[mm, f$sel.rows, f$sel.rows] <- f$varcov
     }
     est <- fit
     # update only items that were changed here
@@ -207,7 +230,7 @@ logdma.average <- function(fit, alpha = 0.99, initmodelprobs=NULL){
     K <- nrow(fit$models)
     x <- fit$x
     
-    if(any(is.na(laplacemodel)) | any(laplacemodel==Inf) | any(laplacemodel==-Inf))
+    if(any(is.na(laplacemodel)) || any(laplacemodel==Inf) || any(laplacemodel==-Inf))
         warning("At least one laplace approximation is not well behaved. This will likely lead to issues with posterior model probabilities. This is likely a computation issue")
 
     #Dynamic model averaging
@@ -332,8 +355,7 @@ for(mm in 1:nrow(models.which)){
 	d <- dim(xdat)[2] 
 
 #matrix of possible combinations of lambda
-tune.mat <- tunemat.fn(lambda,1,d)
-if(autotune==FALSE){tune.mat<-matrix(rep(lambda,d),nrow=1,ncol=d)}
+tune.mat<- if(autotune==FALSE) matrix(rep(lambda,d),nrow=1,ncol=d) else tunemat.fn(lambda,1,d)
 
 #generate inital values using glm and use them for the first initialsamp observations
 init.temp<-dlogr.init(xdat[1:initialsamp,],y[1:initialsamp])

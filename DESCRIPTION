@@ -8,5 +8,6 @@ Maintainer: Hana Sevcikova <hanas@uw.edu>
 Description: Dynamic model averaging for binary and continuous
         outcomes.
 Imports: MASS
+Depends: future
 License: GPL-2
 
