@@ -1,6 +1,6 @@
 logistic.dma.default <-
     function(x, y, models.which, lambda=0.99, alpha=0.99,autotune=TRUE, 
-             initmodelprobs=NULL,initialsamp=NULL, regul = FALSE) {
+             initmodelprobs=NULL,initialsamp=NULL) {
         
         #K is number of candidate models
         #T is time
@@ -21,8 +21,7 @@ logistic.dma.default <-
         #then use 1/K for each model.
         #initialsamp scalar indicating how many observations to use for generating initial 
         #values.  If null (default), then use 10 percent.
-        #regul is logical determining if bayesian regularization of the initial parameters should be used
-        
+
       #how much of the sample should be used to generate initial values?
       if(is.null(initialsamp)){initialsamp<-round(nrow(x)/10,0)}
       if(initialsamp >= nrow(x)) stop("Initial sample must be smaller than the number of observations (", nrow(x), ").")
@@ -32,7 +31,7 @@ logistic.dma.default <-
       trainY <- y[1:initialsamp]
  
       # train the dma logistic model
-      mod <- logdma.init(trainX, trainY, models.which, regul = regul)
+      mod <- logdma.init(trainX, trainY, models.which)
       
       # take the rest as test data  
       st <- initialsamp+1
@@ -58,7 +57,7 @@ logistic.dma.default <-
       mod
 }
 
-logdma.init <- function(x, y, models.which, regul = FALSE) {
+logdma.init <- function(x, y, models.which) {
     # Prepare for estimation using training data
     #K is number of candidate models
     #T is time
@@ -88,7 +87,7 @@ logdma.init <- function(x, y, models.which, regul = FALSE) {
         xdat <- cbind(rep(1,dim(xdat)[1]),xdat)
         sel.rows <- c(1,1+which(models.which[mm,]==1))
         #generate inital values using glm
-        init.temp <- dlogr.init(xdat, y, regul = regul)
+        init.temp <- dlogr.init(xdat, y)
         d <- length(init.temp$BetaHat)
         baytah[mm, , sel.rows] <- matrix(rep(init.temp$BetaHat, nx), nx, d, byrow=TRUE)
         varbaytah[mm, , sel.rows] <- matrix(rep(diag(init.temp$VarBetaHat), nx), nx, d, byrow=TRUE)
