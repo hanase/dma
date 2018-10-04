@@ -1,12 +1,13 @@
 Package: dma
 Type: Package
 Title: Dynamic Model Averaging
-Version: 1.3-5
-Date: 2018-9-30
+Version: 1.4-0
+Date: 2018-10-04
 Author: Tyler H. McCormick, Adrian Raftery, David Madigan, Sevvandi Kandanaarachchi [ctb], Hana Sevcikova [ctb]
 Maintainer: Hana Sevcikova <hanas@uw.edu>
 Description: Dynamic model averaging for binary and continuous
         outcomes.
 Imports: MASS
+Suggests: testthat
 License: GPL-2
 

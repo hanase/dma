@@ -39,12 +39,9 @@ logistic.dma.default <-
       testX <- x[st:en,, drop = FALSE]
       testY <- y[st:en]
       
-      ypreds <- matrix(0, ncol=nrow(models.which), nrow=dim(testX)[1])
-      # predict and update model
-      for(i in 1:dim(testX)[1]){
-        ypreds[i,] <- logdma.predict(mod, testX[i,, drop = FALSE])
-        mod <- logdma.update(mod, testX[i,], testY[i], lambda = lambda, autotune = autotune)
-      }
+      # update the model
+      mod <- logdma.update(mod, testX, testY, lambda = lambda, autotune = autotune)
+      
       # dynamic model averaging
       mod <- logdma.average(mod, alpha = alpha, initmodelprobs = initmodelprobs)
       
@@ -116,7 +113,7 @@ logdma.predict <- function(fit, newx){
     for(mm in 1:num.mods){
         sel.rows <- c(1,1+which(models.which[mm,]==1))
         xx <- newx[,sel.rows]
-        BetaHat <- cbind(fit$theta[mm,last,sel.rows]) # creates a column froma vector
+        BetaHat <- cbind(fit$theta[mm,last,sel.rows]) # creates a column from a vector
         yhat[,mm] <- dlogr.predict(xx,BetaHat)
     }
     return(yhat)
@@ -166,7 +163,7 @@ logdma.update <- function(fit, newx, newy, lambda = 0.99, autotune=TRUE){
     
     for(mm in 1:K){
         sel.rows <- c(1,1+which(models.which[mm,]==1))
-        xx <- newx[,sel.rows]
+        xx <- newx[,sel.rows, drop = FALSE]
         d <- length(sel.rows)
         #matrix of possible combinations of lambda
         tune.mat<- if(autotune==FALSE) matrix(rep(lambda,d),nrow=1,ncol=d) else tunemat.fn(lambda,1,d)
@@ -175,14 +172,18 @@ logdma.update <- function(fit, newx, newy, lambda = 0.99, autotune=TRUE){
         varbetahat.tm1 <- fit$varcov[mm,sel.rows,sel.rows]
 
         # update
-        step.tmp <- dlogr.step(xx,newy,BetaHat,varbetahat.tm1,tune.mat)
-
-        #compute fitted value
-        yhatmodel[mm, update.index] <- 1/(1 + exp(- xx%*%step.tmp$betahat.t))
-        # gather output
-        theta[mm, update.index, sel.rows] <- step.tmp$betahat.t
-        vartheta[mm, update.index, sel.rows] <- diag(step.tmp$varbetahat.t)
-        laplacemodel[mm, update.index] <- step.tmp$laplace.t
+        for(i in 1:nrow(newx)) {
+            x.t <- xx[i,]
+            y.t <- newy[i]
+            step.tmp <- dlogr.step(x.t,y.t,BetaHat,varbetahat.tm1,tune.mat)
+            #compute fitted value
+            yhatmodel[mm, update.index[i]] <- 1/(1 + exp(- x.t%*%step.tmp$betahat.t))
+            # gather output
+            theta[mm, update.index[i], sel.rows] <- BetaHat <- step.tmp$betahat.t
+            vartheta[mm, update.index[i], sel.rows] <- diag(step.tmp$varbetahat.t)
+            laplacemodel[mm, update.index[i]] <- step.tmp$laplace.t
+            varbetahat.tm1 <- step.tmp$varbetahat.t
+        }
         varcov[mm, sel.rows, sel.rows] <- step.tmp$varbetahat.t
     }
     est <- fit

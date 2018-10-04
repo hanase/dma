@@ -17,10 +17,9 @@
 Dynamic model averaging for binary outcomes
 }
 \description{
-Implemtent dynamic model averaging for continuous outcomes as described in 
-McCormick, T.M., Raftery, A.E., Madigan, D. and Burd, R.S. (2011) "Dynamic Logistic Regression and 
-Dynamic Model Averaging for Binary Classification." Biometrics, 66:1162-1173.  Along with the values
-described below, plot() creates a plot of the posterior model probabilities over time and 
+Implements dynamic model averaging for continuous outcomes as described in 
+McCormick et al. (2011, Biometrics).  It can be either performed for all data at once (using \code{logistic.dma}), or dynamically for one observation at a time (combining the remaining functions, see Example).
+Along with the values described below, plot() creates a plot of the posterior model probabilities over time and 
 model-averaged fitted values (with smooth curve overlay) and print() returns model matrix and posterior
 model probabilities.  There are K candidate
 models, T time points, and d total covariates (including the intercept).
@@ -58,8 +57,7 @@ logdma.average(fit, alpha = 0.99, initmodelprobs = NULL)
 }
 
 \details{
-The function \code{logistic.dma} is composed of four parts, which can be also used separately: First, the model is trained with a subset of the data  (function \code{logdma.init}), where the size of the training set is determined by \code{initialsamp}. Note that arguments \code{x} and \code{y} in \code{logdma.init} should contain the training subset only. Second, for each prediction time point, a prediction is made (function \code{logdma.predict}) and the estimation is updated with new observations (function \code{logdma.update}). Lastly, a dynamic model averaging is performed on the final estimates (function \code{logdma.average}).
-
+The function \code{logistic.dma} is composed of three parts, which can be also used separately: First, the model is trained with a subset of the data  (function \code{logdma.init}), where the size of the training set is determined by \code{initialsamp}. Note that arguments \code{x} and \code{y} in \code{logdma.init} should contain the training subset only. Then, the estimation is updated with new observations (function \code{logdma.update}). Lastly, a dynamic model averaging is performed on the final estimates (function \code{logdma.average}). The updating, averaging and in addition predicting (\code{logdma.predict}) can be performed dynamically for one observation at a time, see Example below.
 }
 
 
@@ -85,20 +83,21 @@ Dynamic Model Averaging for Binary Classification." Biometrics, 66:1162-1173.}
 \author{
 Tyler H. McCormick, David Madigan, Adrian Raftery
 
-Sevvandi Kandanaarachchi and Hana Sevcikova implemented the "streaming" functionality, i.e. the original function was decomposed into the four dynamic parts that can be used separately.
+Sevvandi Kandanaarachchi and Hana Sevcikova implemented the "streaming" functionality, i.e. the original function was decomposed into standalone  parts that can be used separately for one observation at a time.
 }
+% Example takes too much time. It's tested in tests.
 \examples{
-#simulate some data to test
-#first, static coefficients
+# simulate some data to test
+# first, static coefficients
 coef <- c(.08,-.4,-.1)
 coefmat <- cbind(rep(coef[1],200),rep(coef[2],200),rep(coef[3],200))
-#then, dynamic ones
+# then, dynamic ones
 coefmat <- cbind(coefmat,seq(1,.45,length.out=nrow(coefmat)),
             seq(-.75,-.15,length.out=nrow(coefmat)),
             c(rep(-1.5,nrow(coefmat)/2),rep(-.5,nrow(coefmat)/2)))
 npar <- ncol(coefmat)-1
 
-#simulate data
+# simulate data
 set.seed(1234)
 dat <- matrix(rnorm(200*(npar),0,1),200,(npar))
 ydat <- exp(rowSums((cbind(rep(1,nrow(dat)),dat))[1:100,]*coefmat[1:100,]))/
@@ -110,7 +109,7 @@ y <- c(ydat,exp(rowSums(cbind(rep(1,nrow(dat)),dat)[-c(1:100),c(1,5,6)]*
 u <- runif (length(y))
 y <- as.numeric (u < y)
 
-#Consider three candidate models
+# Consider three candidate models
 mmat <- matrix(c(1,1,1,1,1,0,0,0,1,1,1,0,1,0,1),3,5, byrow = TRUE)
 
 # Fit model and plot
@@ -123,10 +122,13 @@ plot(ldma.test)
 modl <- logdma.init(dat[1:20,], y[1:20], mmat)
 yhat <- matrix(0, ncol=3, nrow=200)
 for(i in 21:200){
+  # if prediction is desired, use logdma.predict
   yhat[i,] <- logdma.predict(modl, dat[i,])
+  # update
   modl <- logdma.update(modl, dat[i,], y[i], 
-                lambda = .99, autotune = TRUE)
+                lambda = .99, autotune = FALSE)
 }
+# the averaging step could be also done within the loop above
 ldma.stream <- logdma.average(modl, alpha = .99)
 plot(ldma.stream)
 }

@@ -11,13 +11,13 @@ This package implements dynamic Bayesian model averaging as described for contin
 \tabular{ll}{
 Package: \tab dma\cr
 Type: \tab Package\cr
-Version: \tab 1.3-1\cr
-Date: \tab 2018-3-9\cr
+Version: \tab 1.4-0\cr
+Date: \tab 2018-10-4\cr
 License: \tab GPL2\cr
 }
 }
 \author{
-Tyler H. McCormick, Adrian Raftery, David Madigan
+Tyler H. McCormick, Adrian Raftery, David Madigan, Sevvandi Kandanaarachchi [ctb], Hana Sevcikova [ctb]
 
 Maintainer: Hana Sevcikova <hanas@uw.edu>
 }
