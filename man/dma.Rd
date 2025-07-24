@@ -44,7 +44,7 @@ regularization parameter for regularizing posterior model
 		 model probabilities away from zero
 }
   \item{delay}{
-When y_t is controlled, only y_{t-delay-1} and before 
+When \eqn{y_t} is controlled, only \eqn{y_{t-delay-1}} and before 
 		 are available. This is determined by the machine.
 		Note that delay as defined here corresponds to (k-1)
 		 in the Ettler et al (2007, MixSim) paper.
@@ -57,17 +57,17 @@ length of initial period. Performance is summarized with and
 }
 
 \value{
- \item{yhat.bymodel}{TTxK matrix whose tk element gives yhat for yt for model k}
- \item{yhat.ma}{TT vector whose t element gives the model-averaged yhat for yt}
- \item{pmp}{TTxK matrix whose tk element is the post prob of model k at t}
- \item{thetahat}{KxTTx(nvar+1) array whose ktj element is the 
-		 estimate of theta_{j-1} for model k at t}
-\item{Vtheta}{KxTTx(nvar+1) array whose ktj element is the 
-		 variance of theta_{j-1} for model k at t}
- \item{thetahat.ma}{TTx(nvar+1) matrix whose tj element is the model-averaged 
-		 estimate of theta_{j-1} at t}
- \item{Vtheta.ma}{TTx(nvar+1) matrix whose tj element is the model-averaged
-		 variance of thetahat_{j-1} at t}
+ \item{yhat.bymodel}{TTxK matrix whose \eqn{(t,k)} element gives \eqn{\hat{y}} for \eqn{y_t} for model \eqn{k}}
+ \item{yhat.ma}{TT vector whose \eqn{t} element gives the model-averaged \eqn{\hat{y}} for \eqn{y_t}}
+ \item{pmp}{TTxK matrix whose \eqn{(t,k)} element is the post prob of model \eqn{k} at \eqn{t}}
+ \item{thetahat}{KxTTx(nvar+1) array whose \eqn{(k,t,j)} element is the 
+		 estimate of \eqn{\theta_{j-1}} for model \eqn{k} at \eqn{t}}
+\item{Vtheta}{KxTTx(nvar+1) array whose \eqn{(k,t,j)} element is the 
+		 variance of \eqn{\theta_{j-1}} for model \eqn{k} at \eqn{t}}
+ \item{thetahat.ma}{TTx(nvar+1) matrix whose \eqn{(t,j)} element is the model-averaged 
+		 estimate of \eqn{\theta_{j-1}} at \eqn{t}}
+ \item{Vtheta.ma}{TTx(nvar+1) matrix whose \eqn{(t,j)} element is the model-averaged
+		 variance of \eqn{\hat{\theta}_{j-1}} at \eqn{t}}
  \item{mse.bymodel}{MSE for each model}
  \item{mse.ma}{MSE of model-averaged prediction}
  \item{mseinitialperiod.bymodel}{MSE for each model excluding the first initialperiod samples}

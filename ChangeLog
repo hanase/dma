@@ -1,3 +1,6 @@
+1.4.1 (2025-07-24):
+- Fixed a CRAN check NOTE in the documentation by moving subscripts into the 'eqn' environment.
+
 1.4.0 (2018-10-04):
 - Implemented a streaming functionality for logistic.dma (a big thanks to Sevvandi Kandanaarachchi)
 - Added authors
