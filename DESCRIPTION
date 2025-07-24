@@ -3,8 +3,22 @@ Type: Package
 Title: Dynamic Model Averaging
 Version: 1.4-1
 Date: 2025-07-24
-Author: Tyler H. McCormick, Adrian Raftery, David Madigan, Sevvandi Kandanaarachchi [ctb], Hana Sevcikova [ctb]
-Maintainer: Hana Sevcikova <hanas@uw.edu>
+Authors@R: c(person(given = c("Tyler", "H."),
+                      family = "McCormick",
+                      role = "aut"),
+               person(given = "Adrian",
+                      family = "Raftery",
+                      role = "aut"),
+               person(given = "David",
+                      family = "Madigan",
+                      role = "aut"),
+               person(given = "Sevvandi",
+                      family = "Kandanaarachchi",
+                      role = c("ctb", "aut")),
+               person(given = "Hana",
+                      family = "Sevcikova",
+                      role = c("ctb", "aut", "cre"),
+                      email = "hanas@uw.edu"))
 Description: Dynamic model averaging for binary and continuous
         outcomes.
 Imports: MASS

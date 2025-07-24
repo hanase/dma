@@ -17,7 +17,7 @@
 Dynamic model averaging for binary outcomes
 }
 \description{
-Implements dynamic model averaging for continuous outcomes as described in 
+Implements dynamic model averaging for binary outcomes as described in 
 McCormick et al. (2011, Biometrics).  It can be either performed for all data at once (using \code{logistic.dma}), or dynamically for one observation at a time (combining the remaining functions, see Example).
 Along with the values described below, plot() creates a plot of the posterior model probabilities over time and 
 model-averaged fitted values (with smooth curve overlay) and print() returns model matrix and posterior
