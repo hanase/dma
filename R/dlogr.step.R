@@ -9,7 +9,7 @@ function (x.t,y.t,betahat.tm1,varbetahat.tm1,tune.mat) {
     lambda <- tune.mat[which.max(temp),]
     Rhat.t <- varbetahat.tm1
     diag(Rhat.t) <- diag(Rhat.t) / lambda
-    laplace.t=max(temp)
+    laplace.t <- max(temp)
     yhat.t <- dlogr.predict(x.t,betahat.tm1)
    
     Del1 <- t(x.t) %*% (y.t - yhat.t)

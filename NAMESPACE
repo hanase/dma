@@ -1,11 +1,15 @@
-import(MASS, mnormt)
+import(MASS)
 importFrom("graphics", "legend", "matplot", "par", "plot")
 importFrom("stats", "binomial", "coefficients", "glm", "var", "vcov")
 importFrom("utils", "combn")
 # export functions
 export(
 	dma,
-	logistic.dma
+	logistic.dma,
+	logdma.init,
+	logdma.predict,
+	logdma.update,
+	logdma.average
 )
 # register S3 methods
 S3method(dma, default)

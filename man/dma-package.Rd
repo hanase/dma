@@ -8,16 +8,16 @@ Dynamic model averaging
 This package implements dynamic Bayesian model averaging as described for continuous outcomes in Raftery et al. (2010, Technometrics) and for binary outcomes in McCormick et al. (2011, Biometrics).
 }
 \details{
-\tabular{ll}{
-Package: \tab dma\cr
-Type: \tab Package\cr
-Version: \tab 1.3-1\cr
-Date: \tab 2018-3-9\cr
-License: \tab GPL2\cr
+The main averaging functions are:
+\describe{
+\item{\code{\link{dma}}}{for continuous outcomes}
+\item{\code{\link{logistic.dma}}}{for binary outcomes}
 }
+
+
 }
 \author{
-Tyler H. McCormick, Adrian Raftery, David Madigan
+Tyler H. McCormick, Adrian Raftery, David Madigan, Sevvandi Kandanaarachchi [ctb], Hana Sevcikova [ctb]
 
 Maintainer: Hana Sevcikova <hanas@uw.edu>
 }

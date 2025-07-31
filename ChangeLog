@@ -1,3 +1,11 @@
+1.4.1 (2025-07-24):
+- Fixed a CRAN check NOTE in the documentation by moving subscripts into the 'eqn' environment.
+
+1.4.0 (2018-10-04):
+- Implemented a streaming functionality for logistic.dma (a big thanks to Sevvandi Kandanaarachchi)
+- Added authors
+- Added unit tests
+
 1.3-1 (2018-3-9):
 - Fixed issue with estimating until T (instead of T-1)
 - Default for argument delay changed to delay=0.
