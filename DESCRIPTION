@@ -1,8 +1,8 @@
 Package: dma
 Type: Package
 Title: Dynamic Model Averaging
-Version: 1.4-1
-Date: 2025-07-24
+Version: 1.4-2
+Date: 2025-09-19
 Authors@R: c(person(given = c("Tyler", "H."),
                       family = "McCormick",
                       role = "aut"),
