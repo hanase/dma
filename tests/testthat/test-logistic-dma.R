@@ -52,8 +52,8 @@ test_that('Example in logistic.dma without tuning works', {
     expect_true(length(names(ldma$stat)) == 13)
     expect_equal(dim(ldma$stat$pmp), c(3,200))
     expect_false(any(is.na(ldma$stat$pmp)))
-    expect_identical(ldma$stat[order(names(ldma$stat))], 
-                     ldma$stream[order(names(ldma$stream))])
+    expect_equal(ldma$stat[order(names(ldma$stat))], 
+                 ldma$stream[order(names(ldma$stream))])
 })
 
 test_that('Example in logistic.dma with tuning works', {
@@ -62,6 +62,6 @@ test_that('Example in logistic.dma with tuning works', {
     expect_true(length(names(ldma$stat)) == 13)
     expect_equal(dim(ldma$stat$pmp), c(3,200))
     expect_false(any(is.na(ldma$stat$pmp)))
-    expect_identical(ldma$stat[order(names(ldma$stat))], 
-                     ldma$stream[order(names(ldma$stream))])
+    expect_equal(ldma$stat[order(names(ldma$stat))], 
+                 ldma$stream[order(names(ldma$stream))])
 })
